@@ -2,19 +2,28 @@
 
 namespace App\Http\Livewire;
 
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\ViewErrorBag;
 
 class PlantId extends Component
 {
     use WithFileUploads;
 
     public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
+    // public $hasErrors = false;
+    public $addImage = false;
+    public $content;
+    public $contentType;
+    public $header;
+    public $data = null;
     public $ids = ['1', '2', '3', '4', '5'];
     public $organs = [];
     public $images = [];
+
 
     public function rules()
     {
@@ -52,9 +61,12 @@ class PlantId extends Component
     }
 
     public function save()
-    {
-        $data = $this->validate();
+    {   
 
+       try {
+           $this->data = $this->validate();
+      
+        
         $baseName = substr(hash(
             'sha1',
             'cURL-php-multiple-value-same-key-support' . microtime()
@@ -64,7 +76,7 @@ class PlantId extends Component
         $body = array();
         $crlf = "\r\n";
 
-        foreach ($data as $keys => $values) {
+        foreach ($this->data as $keys => $values) {
             if ($keys === 'organs') {
                 foreach ($values as $value) {
                     $body[] = '--' . $boundary;
@@ -88,43 +100,48 @@ class PlantId extends Component
         $body[] = '--' . $boundary . '--';
         $body[] = '';
 
-        $contentType = 'multipart/form-data; boundary=' . $boundary;
-        $content = join($crlf, $body);
+        $this->contentType = 'multipart/form-data; boundary=' . $boundary;
+        $this->content = join($crlf, $body);
+        $this->header = [
+            'Content-Length' => strlen($this->content),
+            'Expect' => '100-continue',
+        ];
 
-
-        try {
-            $response = Http::withHeaders([
-                'Content-Length' => strlen($content),
-                'Expect' => '100-continue',
-            ])
-                ->withBody($content, $contentType)
+            $response = Http::withHeaders($this->header)
+                ->withBody($this->content, $this->contentType)
                 ->post('https://my-api.plantnet.org/v2/identify/all?include-related-images=true&api-key=2b10FiRnqF3kK1anow3Ga9Y7e')
                 ->json();
 
             session()->flash('flash.banner', 'Yay it works!');
             session()->flash('flash.bannerStyle', 'success');
-
+            dd($response);
             return $response;
 
-        } catch (\Exception $e) {
-            dump($e);
-            return session()->flash('flash.banner', $e->getMessage());
-            return session()->flash('flash.bannerStyle', 'danger');
+        } catch (ValidationException $th) {
+            $this->emitSelf('hasErrors');
+            throw $th;
+        } 
+        // catch (\Exception $e) {
+        //     dump($e);
+        //     return session()->flash('flash.banner', $e->getMessage());
+        //     return session()->flash('flash.bannerStyle', 'danger');
 
 
-        } catch (\Error $err) {
-            dump($err);
-            return session()->flash('error', 'Opps something went wrong!');
+        // } catch (\Error $err) {
+        //     dump($err);
+        //     return session()->flash('error', 'Opps something went wrong!');
 
-        }
+        // }
 
+   
         // Http::get('https://api.gbif.org/v1/species/' . $response['results'][0]['gbif']['id'] . '/descriptions')->json();
 
     }
 
     public function render()
     {
-        return view('livewire.plant-id');
+        return view('livewire.plant-id')
+            ->layout('layouts.plant-id');
     }
 }
 
