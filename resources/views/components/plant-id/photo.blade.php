@@ -1,6 +1,4 @@
-@props([
-    'error'
-])
+
 <div>
     <label class="uppercase md:text-sm text-xs text-gray-500 font-semibold mb-1">Upload Photo</label>
     <div class='flex items-center justify-center w-full'>
@@ -18,7 +16,4 @@
             <input {{ $attributes }} type='file' class="hidden" />
         </label>
     </div>
-    @if ($error)
-    <span class="text-red-600 text-lg">{{ $error }}</span>
-    @endif
 </div>

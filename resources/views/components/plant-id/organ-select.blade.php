@@ -1,4 +1,3 @@
-@props(['error'])
 <div>
     <div class="grid grid-cols-1 mb-5 mx-7">
         <label class="uppercase md:text-sm text-xs text-gray-500 font-semibold text-center">Select an Organ</label>
@@ -27,7 +26,4 @@
 
         </select>
     </div>
-    @if ($error)
-    <span class="text-red-600 text-lg">{{ $error }}</span>
-    @endif
 </div>
