@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -14,15 +15,17 @@ class PlantId extends Component
     use WithFileUploads;
 
     public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
-    // public $hasErrors = false;
     public $addImage = false;
     public $content;
     public $contentType;
     public $header;
     public $data = null;
-    public $ids = ['1', '2', '3', '4', '5'];
+    public $ids = ['0', '1', '2', '3', '4',];
     public $organs = [];
     public $images = [];
+    public $results;
+    public $score;
+    public $scoreColor;
 
 
     public function rules()
@@ -43,6 +46,7 @@ class PlantId extends Component
 
         return array_combine($keys, $values);
     }
+    
 
     public function clearProperties()
     {
@@ -60,52 +64,66 @@ class PlantId extends Component
         unset($this->images[$id]);
     }
 
-    public function save()
-    {   
+    public function getResponse()
+    {
 
-       try {
-           $this->data = $this->validate();
-      
-        
-        $baseName = substr(hash(
-            'sha1',
-            'cURL-php-multiple-value-same-key-support' . microtime()
-        ), 0, 12);
-        $boundary = '----------------------------' . $baseName;
-
-        $body = array();
-        $crlf = "\r\n";
-
-        foreach ($this->data as $keys => $values) {
-            if ($keys === 'organs') {
-                foreach ($values as $value) {
-                    $body[] = '--' . $boundary;
-                    $body[] = 'Content-Disposition: form-data; name="' . $keys . '"';
-                    $body[] = '';
-                    $body[] = $value;
-                }
-            }
-
-            if ($keys === 'images') {
-                foreach ($values as $value) {
-                    $body[] = '--' . $boundary;
-                    $body[] = 'Content-Disposition: form-data; name="' . $keys . '"; filename="' . $value->getClientOriginalName() . '"';
-                    $body[] = 'Content-Type: application/octet-stream';
-                    $body[] = '';
-                    $body[] = $value->get();
-                }
-            }
+        $this->results = Cache::get('plant-id-response')['results'];
+        foreach ($this->results as $key => $value) {
+            $gbif = Http::get('https://api.gbif.org/v1/species/' . $value['gbif']['id'].'/name')->json();
+                $this->results['gbif'][] = $gbif;
         }
+        // dd($this->results['gbif']);
+     
+        return $this->results;
+    }
 
-        $body[] = '--' . $boundary . '--';
-        $body[] = '';
+    public function makeRequest()
+    {
 
-        $this->contentType = 'multipart/form-data; boundary=' . $boundary;
-        $this->content = join($crlf, $body);
-        $this->header = [
-            'Content-Length' => strlen($this->content),
-            'Expect' => '100-continue',
-        ];
+        try {
+            $this->data = $this->validate();
+
+
+            $baseName = substr(hash(
+                'sha1',
+                'cURL-php-multiple-value-same-key-support' . microtime()
+            ), 0, 12);
+            $boundary = '----------------------------' . $baseName;
+
+            $body = array();
+            $crlf = "\r\n";
+
+            foreach ($this->data as $keys => $values) {
+                if ($keys === 'organs') {
+                    foreach ($values as $value) {
+                        $body[] = '--' . $boundary;
+                        $body[] = 'Content-Disposition: form-data; name="' . $keys . '"';
+                        $body[] = '';
+                        $body[] = $value;
+                    }
+                }
+
+                if ($keys === 'images') {
+                    foreach ($values as $value) {
+                        $body[] = '--' . $boundary;
+                        $body[] = 'Content-Disposition: form-data; name="' . $keys . '"; filename="' . $value->getClientOriginalName() . '"';
+                        $body[] = 'Content-Type: application/octet-stream';
+                        $body[] = '';
+                        $body[] = $value->get();
+                    }
+                }
+            }
+
+            $body[] = '--' . $boundary . '--';
+            $body[] = '';
+
+            $this->contentType = 'multipart/form-data; boundary=' . $boundary;
+            $this->content = join($crlf, $body);
+            $this->header = [
+                'Content-Length' => strlen($this->content),
+                'Expect' => '100-continue',
+            ];
+
 
             $response = Http::withHeaders($this->header)
                 ->withBody($this->content, $this->contentType)
@@ -114,28 +132,18 @@ class PlantId extends Component
 
             session()->flash('flash.banner', 'Yay it works!');
             session()->flash('flash.bannerStyle', 'success');
+            Cache::put('plant-id-response', $response);
             dd($response);
             return $response;
+
+            // foreach($result->images as $image){
+            //             echo '<img src="'.$image->url->o.'"'.' style="width: 200px;"/>';
+            //         }
 
         } catch (ValidationException $th) {
             $this->emitSelf('hasErrors');
             throw $th;
-        } 
-        // catch (\Exception $e) {
-        //     dump($e);
-        //     return session()->flash('flash.banner', $e->getMessage());
-        //     return session()->flash('flash.bannerStyle', 'danger');
-
-
-        // } catch (\Error $err) {
-        //     dump($err);
-        //     return session()->flash('error', 'Opps something went wrong!');
-
-        // }
-
-   
-        // Http::get('https://api.gbif.org/v1/species/' . $response['results'][0]['gbif']['id'] . '/descriptions')->json();
-
+        }
     }
 
     public function render()
@@ -144,22 +152,3 @@ class PlantId extends Component
             ->layout('layouts.plant-id');
     }
 }
-
-    // public function save()
-    // {
-
-    //     dd($this->organs, $this->photos);
-    //     $images = Storage::files('tree_id_photos');
-
-    //     $this->validate([
-    //         'photos.*' => 'image|max:1024', // 1MB Max
-    //     ]);
-
-    //     foreach ($this->photos as $key => $photo) {
-    //         $this->photos[$key] = $photo->store('photos');
-    //     }
-
-    //     dd(json_encode($this->photos));
-
-    //     
-    // }
