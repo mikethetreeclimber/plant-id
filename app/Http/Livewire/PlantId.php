@@ -47,6 +47,10 @@ class PlantId extends Component
         return array_combine($keys, $values);
     }
     
+    public function addSelectedOrgan($id, $organ)
+    {
+        array_push($this->organs, $organ);
+    }
 
     public function clearProperties()
     {
