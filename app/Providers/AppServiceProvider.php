@@ -6,6 +6,7 @@ use App\View\Components\PlantId\Error;
 use App\View\Components\PlantId\OrganSelect;
 use App\View\Components\PlantId\Photo;
 use App\View\Components\PlantId\Score;
+use App\View\Components\PlantId\SelectOrganModal;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 

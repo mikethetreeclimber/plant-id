@@ -21,13 +21,14 @@
 </head>
 
 <body class="font-sans antialiased">
-    <x-jet-banner />
 
-    <x-container>
-        <main>
-            {{ $slot }}
+        <main class="mt-10 flex mx-auto">
+          
+
+                {{ $slot }}
+
+               
         </main>
-    </x-container>
 
     @stack('modals')
 
