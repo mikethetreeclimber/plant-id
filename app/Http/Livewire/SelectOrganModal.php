@@ -1,13 +1,14 @@
 <?php
+namespace App\Http\Livewire;
 
-namespace App\View\Components\PlantId;
-
-use Illuminate\View\Component;
+use Livewire\Component;
 
 class SelectOrganModal extends Component
 {
-    public $id;
-    public $image;
+    public $imageUrl = '';
+    public $dataId;
+    public $selectOrgan = false;
+    public $organs = [];
     public $organIcons = [
         'bark.png',
         'flower.png',
@@ -17,24 +18,27 @@ class SelectOrganModal extends Component
         'habit.png'
     ];
     public $organIconsPath = 'storage/icons/plant-id/organs/';
-    /**
-     * Create a new component instance.
-     *
-     * @return void
-     */
-    public function __construct($id, $image)
+
+    public $listeners = [ 
+        'showModal'
+    ];
+
+    public function showModal($imageUrl)
     {
-        $this->id = $id;
-        $this->image = $image;
+        $this->imageUrl = $imageUrl;
+        $this->selectOrgan = true;
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\Contracts\View\View|\Closure|string
-     */
+    public function addSelectedOrgan($organ)
+    {
+        $this->emitTo(PlantId::class, 'organSelected', $organ);
+        $this->reset();
+
+        // $this->selectOrgan = false;
+    }
+
     public function render()
     {
-        return view('components.plant-id.select-organ-modal');
+        return view('livewire.select-organ-modal');
     }
 }

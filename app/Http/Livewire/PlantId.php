@@ -23,10 +23,14 @@ class PlantId extends Component
     public $ids = ['0', '1', '2', '3', '4',];
     public $organs = [];
     public $images = [];
-    public $results;
+    public $results = [];
     public $score;
     public $scoreColor;
+    public $listeners = [ 
+        'organSelected'
+    ];
 
+    
 
     public function rules()
     {
@@ -47,9 +51,17 @@ class PlantId extends Component
         return array_combine($keys, $values);
     }
     
-    public function addSelectedOrgan($id, $organ)
+    public function updatedImages($image)
     {
-        array_push($this->organs, $organ);
+        $photo = array_pop($image);
+        // dd($photo);
+        $this->emitTo(SelectOrganModal::class, 'showModal', $photo->temporaryUrl());
+    }
+
+    public function organSelected($organ)
+    {
+        $this->organs[] = $organ;
+        // $this->dispatchBrowserEvent('success', "the organ $organ has been successfully associated with the photo you have uploaded");
     }
 
     public function clearProperties()
@@ -70,13 +82,11 @@ class PlantId extends Component
 
     public function getResponse()
     {
-
         $this->results = Cache::get('plant-id-response')['results'];
-        foreach ($this->results as $key => $value) {
-            $gbif = Http::get('https://api.gbif.org/v1/species/' . $value['gbif']['id'].'/name')->json();
-                $this->results['gbif'][] = $gbif;
-        }
-        // dd($this->results['gbif']);
+        // foreach ($this->results as $key => $value) {
+        //     $gbif = Http::get('https://api.gbif.org/v1/species/' . $value['gbif']['id'].'/name')->json();
+        //         $this->results['gbif'][] = $gbif;
+        // }
      
         return $this->results;
     }
@@ -134,16 +144,8 @@ class PlantId extends Component
                 ->post('https://my-api.plantnet.org/v2/identify/all?include-related-images=true&api-key=2b10FiRnqF3kK1anow3Ga9Y7e')
                 ->json();
 
-            session()->flash('flash.banner', 'Yay it works!');
-            session()->flash('flash.bannerStyle', 'success');
-            Cache::put('plant-id-response', $response);
-            dd($response);
-            return $response;
-
-            // foreach($result->images as $image){
-            //             echo '<img src="'.$image->url->o.'"'.' style="width: 200px;"/>';
-            //         }
-
+                Cache::put('plant-id-response', $response);
+                dd($response['results']);
         } catch (ValidationException $th) {
             $this->emitSelf('hasErrors');
             throw $th;

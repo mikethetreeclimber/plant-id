@@ -7,11 +7,7 @@ use Illuminate\View\Component;
 class Score extends Component
 {
     public $score;
-    /**
-     * Create a new component instance.
-     *
-     * @return void
-     */
+
     public function __construct($score)
     {
         $this->score = number_format($score * 100, 1);
@@ -30,11 +26,6 @@ class Score extends Component
         }
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\Contracts\View\View|\Closure|string
-     */
     public function render()
     {
         return view('components.plant-id.score');
