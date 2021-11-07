@@ -2,15 +2,8 @@
 
 namespace App\Http\Livewire;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Request as FacadesRequest;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\ViewErrorBag;
 
 class PlantId extends Component
 {
