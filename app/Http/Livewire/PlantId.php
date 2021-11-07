@@ -2,11 +2,13 @@
 
 namespace App\Http\Livewire;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ViewErrorBag;
 
@@ -16,21 +18,15 @@ class PlantId extends Component
 
     public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
     public $addImage = false;
-    public $content;
-    public $contentType;
-    public $header;
-    public $data = null;
     public $ids = ['0', '1', '2', '3', '4',];
     public $organs = [];
     public $images = [];
-    public $results = [];
-    public $score;
-    public $scoreColor;
-    public $listeners = [ 
+    public $results;
+    public $listeners = [
         'organSelected'
     ];
 
-    
+
 
     public function rules()
     {
@@ -50,7 +46,7 @@ class PlantId extends Component
 
         return array_combine($keys, $values);
     }
-    
+
     public function updatedImages($image)
     {
         $photo = array_pop($image);
@@ -80,76 +76,98 @@ class PlantId extends Component
         unset($this->images[$id]);
     }
 
-    public function getResponse()
+    public function getResponse($results)
     {
-        $this->results = Cache::get('plant-id-response')['results'];
-        // foreach ($this->results as $key => $value) {
-        //     $gbif = Http::get('https://api.gbif.org/v1/species/' . $value['gbif']['id'].'/name')->json();
-        //         $this->results['gbif'][] = $gbif;
-        // }
-     
-        return $this->results;
+        $this->results = json_decode($results)->results;
     }
 
     public function makeRequest()
     {
+        
+        $data = $this->validate();
 
-        try {
-            $this->data = $this->validate();
 
+        $curl = curl_init();
 
-            $baseName = substr(hash(
-                'sha1',
-                'cURL-php-multiple-value-same-key-support' . microtime()
-            ), 0, 12);
-            $boundary = '----------------------------' . $baseName;
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://my-api.plantnet.org/v2/identify/all?include-related-images=true&api-key=2b10FiRnqF3kK1anow3Ga9Y7e',
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        ));
 
-            $body = array();
-            $crlf = "\r\n";
+        $this->setCurl($curl, $data);
+        $response = curl_exec($curl);
+        curl_close($curl);
 
-            foreach ($this->data as $keys => $values) {
-                if ($keys === 'organs') {
-                    foreach ($values as $value) {
-                        $body[] = '--' . $boundary;
-                        $body[] = 'Content-Disposition: form-data; name="' . $keys . '"';
-                        $body[] = '';
-                        $body[] = $value;
-                    }
-                }
+        $this->getResponse($response);
+    }
 
-                if ($keys === 'images') {
-                    foreach ($values as $value) {
-                        $body[] = '--' . $boundary;
-                        $body[] = 'Content-Disposition: form-data; name="' . $keys . '"; filename="' . $value->getClientOriginalName() . '"';
-                        $body[] = 'Content-Type: application/octet-stream';
-                        $body[] = '';
-                        $body[] = $value->get();
-                    }
+    public function setCurl($curl, $data)
+    {
+        $algos = hash_algos();
+        $hashAlgo = null;
+
+        foreach (array('sha1', 'md5') as $preferred) {
+            if (in_array($preferred, $algos)) {
+                $hashAlgo = $preferred;
+                break;
+            }
+        }
+
+        if ($hashAlgo === null) {
+            list($hashAlgo) = $algos;
+        }
+
+        $boundary = '----------------------------' . substr(hash(
+            $hashAlgo,
+            'cURL-php-multiple-value-same-key-support' . microtime()
+        ), 0, 12);
+
+        $body = array();
+        $crlf = "\r\n";
+
+        foreach ($data as $keys => $values) {
+            if ($keys === 'organs') {
+                foreach ($values as $value) {
+                    $body[] = '--' . $boundary;
+                    $body[] = 'Content-Disposition: form-data; name="' . $keys . '"';
+                    $body[] = '';
+                    $body[] = $value;
                 }
             }
 
-            $body[] = '--' . $boundary . '--';
-            $body[] = '';
-
-            $this->contentType = 'multipart/form-data; boundary=' . $boundary;
-            $this->content = join($crlf, $body);
-            $this->header = [
-                'Content-Length' => strlen($this->content),
-                'Expect' => '100-continue',
-            ];
-
-
-            $response = Http::withHeaders($this->header)
-                ->withBody($this->content, $this->contentType)
-                ->post('https://my-api.plantnet.org/v2/identify/all?include-related-images=true&api-key=2b10FiRnqF3kK1anow3Ga9Y7e')
-                ->json();
-
-                Cache::put('plant-id-response', $response);
-                dd($response['results']);
-        } catch (ValidationException $th) {
-            $this->emitSelf('hasErrors');
-            throw $th;
+            if ($keys === 'images') {
+                foreach ($values as $value) {
+                    $body[] = '--' . $boundary;
+                    $body[] = 'Content-Disposition: form-data; name="' . $keys . '"; filename="' . $value->getClientOriginalName() . '"';
+                    $body[] = 'Content-Type: application/octet-stream';
+                    $body[] = '';
+                    $body[] = $value->get();
+                }
+            }
         }
+
+        $body[] = '--' . $boundary . '--';
+        $body[] = '';
+
+        $contentType = 'multipart/form-data; boundary=' . $boundary;
+        $content = join($crlf, $body);
+
+
+        $contentLength = strlen($content);
+
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Content-Length: ' . $contentLength,
+            'Expect: 100-continue',
+            'Content-Type: ' . $contentType
+        ));
+
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
     }
 
     public function render()
