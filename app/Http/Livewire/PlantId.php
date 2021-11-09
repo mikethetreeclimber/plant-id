@@ -17,6 +17,8 @@ class PlantId extends Component
     public $organs = [];
     public $images = [];
     public $results;
+    public $score;
+    public $colorOfScore;
     public $listeners = [
         'organSelected'
     ];
