@@ -19,10 +19,7 @@ class PlantId extends Component
     public $ids = ['0', '1', '2', '3', '4',];
     public $organs = [];
     public $images = [];
-    public $uploadingImages = true;
     public $results;
-    public $score;
-    public $colorOfScore;
     public $listeners = [
         'organSelected'
     ];
@@ -50,7 +47,6 @@ class PlantId extends Component
 
     public function updatedImages($image)
     {
-        // dd($this->images, $image, key($image));
         $this->selectOrgan(array_pop($image)->temporaryUrl());
     }
 
@@ -81,18 +77,9 @@ class PlantId extends Component
         unset($this->organs[$id]);
     }
 
-    public function submit()
+    public function getResponse($results)
     {
-        try {
-            $this->results = $this->getResults();
-        } catch (\Throwable $e) {
-            $this->emitSelf('hasErrors');
-            throw $e;
-        }
-
-        if (isset($this->results)) {
-            $this->uploadingImages = false;
-        }
+        $this->results = json_decode($results)->results;
     }
 
     public function render()
