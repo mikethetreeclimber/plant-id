@@ -4,10 +4,7 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-<<<<<<< HEAD
 use App\Http\Livewire\Traits\MakesPlantIdRequest;
-=======
->>>>>>> refs/remotes/origin/main
 
 class PlantId extends Component
 {
