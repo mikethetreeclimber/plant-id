@@ -9,7 +9,7 @@ trait MakesPlantIdRequest
         dd(...$data);
     }
 
-    public function makeRequest()
+    public function getResults()
     {
         
         $data = $this->validate();
@@ -31,8 +31,9 @@ trait MakesPlantIdRequest
         $this->setCurl($curl, $data);
         $response = curl_exec($curl);
         curl_close($curl);
+        
+        return json_decode($response)->results;
 
-        $this->getResponse($response);
     }
 
     public function setCurl($curl, $data)

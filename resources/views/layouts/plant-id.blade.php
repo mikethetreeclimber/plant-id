@@ -22,7 +22,7 @@
 
 <body class="font-sans antialiased">
 
-        <main class="mt-10 flex mx-auto">
+        <main class="mx-auto">
           
 
                 {{ $slot }}

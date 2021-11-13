@@ -10,12 +10,12 @@ class SelectOrganModal extends Component
     public $selectOrgan = false;
     public $organs = [];
     public $organIcons = [
-        'bark.png',
-        'flower.png',
-        'fruit.png',
-        'leaf.png',
-        'other.png',
-        'habit.png'
+        'bark',
+        'flower',
+        'fruit',
+        'leaf',
+        'habit',
+        'other'
     ];
     public $organIconsPath = 'storage/icons/plant-id/organs/';
 
