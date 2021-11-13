@@ -22,7 +22,7 @@
 
 <body class="font-sans antialiased">
 
-        <main class="mx-auto">
+        <main class="mx-auto bg-gray-300 h-screen">
           
 
                 {{ $slot }}
