@@ -4,14 +4,12 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Http\Livewire\Traits\HasImageSlider;
 use App\Http\Livewire\Traits\MakesPlantIdRequest;
 
 class PlantId extends Component
 {
     use WithFileUploads;
     use MakesPlantIdRequest;
-    use HasImageSlider;
 
     public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
     public $addImage = false;
@@ -59,7 +57,7 @@ class PlantId extends Component
     public function organSelected($organ)
     {
         $this->organs[] = $organ;
-        // $this->dispatchBrowserEvent('success', "the organ $organ has been successfully associated with the photo you have uploaded");
+        $this->emitTo(ImageSlider::class, 'imageAdded', array_pop($this->images));
     }
 
     public function clearProperties()
