@@ -15,11 +15,24 @@
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
 
     <!-- Scripts -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
 <body class="font-sans antialiased bg-gray-200">
     <main class="mx-auto bg-gray-300 h-screen">
         <x-container>
+            @php
+            $slider = [
+                'index' => 1,
+                'images' => [
+                    'https://source.unsplash.com/1600x900/?beach', 
+                    'https://source.unsplash.com/1600x900/?cat', 
+                    'https://source.unsplash.com/1600x900/?dog', 
+                    'https://source.unsplash.com/1600x900/?lego', 
+                    'https://source.unsplash.com/1600x900/?textures&patterns',
+                ]
+            ];
+            @endphp
 
             <div>
                 <div class="bg-gray-400 overflow-hidden shadow rounded-lg w-full">
@@ -62,7 +75,7 @@
                     </div>
 
 
-                    <div class="px-4 py-5 sm:p-6">
+                    <div x-data="{slider: @json($slider)}" class="px-4 py-5 sm:p-6">
                         <div class="grid gap-2 grid-cols-2">
                             <div class="mx-auto col-span-2 ">
                                 <div
@@ -178,6 +191,10 @@
             </div>
         </x-container>
     </main>
+
+    <script>
+
+    </script>
 </body>
 
 </html>

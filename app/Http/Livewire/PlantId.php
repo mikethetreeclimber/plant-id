@@ -4,16 +4,17 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use App\Http\Livewire\Traits\HasImageSlider;
 use App\Http\Livewire\Traits\MakesPlantIdRequest;
 
 class PlantId extends Component
 {
     use WithFileUploads;
     use MakesPlantIdRequest;
+    use HasImageSlider;
 
     public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
     public $addImage = false;
-    public $ids = ['0', '1', '2', '3', '4',];
     public $organs = [];
     public $images = [];
     public $uploadingImages = true;
@@ -24,13 +25,11 @@ class PlantId extends Component
         'organSelected'
     ];
 
-
-
     public function rules()
     {
         $keys = [];
         $values = [];
-        foreach ($this->ids as $key) {
+        foreach (array_keys($this->images) as $key) {
             $values[] = 'sometimes|required|mimes:jpeg,png|max:10400';
             $keys[] = 'images.' . $key;
             $values[] = 'required_with:images.' . $key;
@@ -45,10 +44,11 @@ class PlantId extends Component
         return array_combine($keys, $values);
     }
 
-    public function updatedImages($image)
+    public function updatingImages($images)
     {
-        // dd($this->images, $image, key($image));
-        $this->selectOrgan(array_pop($image)->temporaryUrl());
+        $image = collect($images)->diff($this->images)->first();
+        
+        $this->selectOrgan($image->temporaryUrl());
     }
 
     public function selectOrgan($photoUrl)
@@ -70,6 +70,7 @@ class PlantId extends Component
     public function changeOrgan($id)
     {
         unset($this->organs[$id]);
+        $this->selectOrgan($this->images[$id]);
     }
 
     public function changeImage($id)

@@ -3,7 +3,7 @@
     'icon' => null
     ])
 <div
-    class="overflow-hidden p-2 shadow-lg rounded-lg relative w-full h-auto m-auto bg-gray-900">
+    class="overflow-hidden p-2 shadow-lg rounded-lg relative w-full h-full m-auto bg-gray-900">
 
     <img alt="uploaded photo" src="{{ $img }}" class="rounded-lg w-full h-full object-fill" />
 

@@ -29,10 +29,11 @@
                         </div>
                     </div>
                 </x-slot>
+                {{-- Image Slider --}}
                 <div class="grid gap-2 grid-cols-2">
                     @if (array_key_exists(0, $images) && array_key_exists(0, $organs))
                         <div class="mx-auto col-span-2 ">
-                            <x-image-card :img="$images[0]->temporaryUrl()" :icon="$organs[0]" />
+                            <x-image-card :img="$images[$currentImageIndex]->temporaryUrl()" :icon="$organs[$currentImageIndex]" />
                         </div>
                     @endif
                     @if (count($images) > 1)
@@ -44,6 +45,7 @@
                         </div>
                     @endif
                 </div>
+                
                 <x-slot name="footer">
                     <div class="flex justify-end space-x-2">
                         <span>
@@ -53,7 +55,7 @@
                                 Submit
                             </button>
                             <div wire:loading wire:target="submit">
-                                Loading...
+                                <x-loading-gears />
                             </div>
                         </span>
                         <button wire:click="clearProperties"
@@ -66,6 +68,7 @@
             </x-panel>
         @endif
     </div>
+    {{-- Results --}}
     <div class="space-y-4">
         @isset($results)
             @foreach ($results as $id => $result)
@@ -102,6 +105,7 @@
                     <div class="grid gap-2 grid-cols-2">
                         {{-- @for ($i = 0; $i < count($result->images); $i++) --}}
                             <div class="mx-auto col-span-2 ">
+                                @dump($result->images)
 
                                 <x-image-card img="{{ $result->images[0]->url->o }}"
                                     icon="{{ $result->images[0]->organ }}" />
