@@ -3,29 +3,28 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
+use Illuminate\Support\Facades\Cache;
 
 class ImageSlider extends Component
 {
-    public $images = [];
+    public $imageUrls = [];
+    public $organs = [];
     public $currentImageIndex = 0;
     public $listeners = [
         'imageAdded' => 'pushImageToArray'
     ];
 
-    public function mount($images)
+    public function pushImageToArray($key)
     {
-        $this->images = $images;
-    }
-
-    public function pushImageToArray($image)
-    {
-        dd($image);
-        return array_push($this->images, $image);
+        $imageOrgan = Cache::get($key);
+        [$imageUrl, $organ] = [$imageOrgan['imageUrl'], $imageOrgan['organ']];
+        array_push($this->imageUrls, $imageUrl);
+        array_push($this->organs, $organ);
     }
 
     public function back()
     {
-        $count = count($this->images);
+        $count = count($this->imageUrls);
         if ($this->currentImageIndex === 0) {
             $this->currentImageIndex = $count - 1;
             return;
@@ -37,7 +36,7 @@ class ImageSlider extends Component
 
     public function next()
     {
-        $count = count($this->images);
+        $count = count($this->imageUrls);
         if ($this->currentImageIndex === $count - 1) {
             $this->currentImageIndex = 0;
             return;

@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Livewire\Traits\MakesPlantIdRequest;
 
 class PlantId extends Component
@@ -44,20 +45,27 @@ class PlantId extends Component
 
     public function updatingImages($images)
     {
-        $image = collect($images)->diff($this->images)->first();
+        $key = key(collect($images)
+            ->diff($this->images)
+            ->toArray());
+
+        Cache::put($key, ['imageUrl' => collect($images)
+            ->diff($this->images)
+            ->first()
+            ->temporaryUrl()]);
         
-        $this->selectOrgan($image->temporaryUrl());
+        $this->selectOrgan($key);
     }
 
-    public function selectOrgan($photoUrl)
+    public function selectOrgan($key)
     {
-        $this->emitTo(SelectOrganModal::class, 'showModal', $photoUrl);
+        $this->emitTo(SelectOrganModal::class, 'showModal', $key);
     }
 
-    public function organSelected($organ)
+    public function organSelected($key)
     {
-        $this->organs[] = $organ;
-        $this->emitTo(ImageSlider::class, 'imageAdded', array_pop($this->images));
+        $this->organs[] = Cache::get($key)['organ'];
+        $this->emitTo(ImageSlider::class, 'imageAdded', $key);
     }
 
     public function clearProperties()

@@ -2,11 +2,12 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
+use Illuminate\Support\Facades\Cache;
 
 class SelectOrganModal extends Component
 {
     public $imageUrl = '';
-    public $dataId;
+    public $currentKey;
     public $selectOrgan = false;
     public $organs = [];
     public $organIcons = [
@@ -23,18 +24,22 @@ class SelectOrganModal extends Component
         'showModal'
     ];
 
-    public function showModal($imageUrl)
+    public function showModal($key)
     {
-        $this->imageUrl = $imageUrl;
+        $this->currentKey = $key;
+        $this->imageUrl = Cache::get($this->currentKey)['imageUrl'];
+
         $this->selectOrgan = true;
     }
 
     public function addSelectedOrgan($organ)
     {
-        $this->emitTo(PlantId::class, 'organSelected', $organ);
+        Cache::put($this->currentKey, [
+            'imageUrl' => $this->imageUrl, 
+            'organ' => $organ
+        ]);
+        $this->emitTo(PlantId::class, 'organSelected', $this->currentKey);
         $this->reset();
-
-        // $this->selectOrgan = false;
     }
 
     public function render()
