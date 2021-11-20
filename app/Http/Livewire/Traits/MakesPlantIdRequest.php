@@ -2,7 +2,7 @@
 
 namespace App\Http\Livewire\Traits;
 
-trait MakesPlantIdRequest 
+trait MakesPlantIdRequest
 {
     public function makeBody($data)
     {
@@ -11,7 +11,7 @@ trait MakesPlantIdRequest
 
     public function getResults()
     {
-        
+
         $data = $this->validate();
 
 
@@ -31,9 +31,24 @@ trait MakesPlantIdRequest
         $this->setCurl($curl, $data);
         $response = curl_exec($curl);
         curl_close($curl);
-        
-        return json_decode($response)->results;
 
+        return collect(json_decode($response)->results)
+            ->map(function ($result) {
+                return collect([
+                    number_format($result->score * 100, 1),
+                    ucwords($result->species->commonNames[0]),
+                    ucwords($result->species->scientificName),
+                    ucwords($result->species->scientificNameWithoutAuthor),
+                    collect($result->images)->map(function ($image) {
+                        return  [
+                            'imageUrl' => $image->url->m,
+                            'organ' => $image->organ,
+                            'citation' => $image->citation,
+                            'date' => $image->date->string
+                        ];
+                    })
+                ]);
+            })->toArray();
     }
 
     public function setCurl($curl, $data)
@@ -98,5 +113,4 @@ trait MakesPlantIdRequest
 
         curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
     }
-
 }

@@ -5,12 +5,14 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Cache;
+use App\Http\Livewire\Traits\HasImageSlider;
 use App\Http\Livewire\Traits\MakesPlantIdRequest;
 
 class PlantId extends Component
 {
     use WithFileUploads;
     use MakesPlantIdRequest;
+    use HasImageSlider;
 
     public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
     public $addImage = false;
@@ -85,10 +87,19 @@ class PlantId extends Component
         unset($this->organs[$id]);
     }
 
+    public function getCache()
+    {
+        $this->results = Cache::get('results');
+        if (isset($this->results)) {
+            $this->uploadingImages = false;
+        }
+    }
+
     public function submit()
     {
         try {
             $this->results = $this->getResults();
+            Cache::put('results', $this->results);
         } catch (\Throwable $e) {
             $this->emitSelf('hasErrors');
             throw $e;
@@ -105,3 +116,6 @@ class PlantId extends Component
             ->layout('layouts.plant-id');
     }
 }
+
+
+
