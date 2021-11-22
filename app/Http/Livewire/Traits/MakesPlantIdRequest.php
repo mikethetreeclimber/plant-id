@@ -31,10 +31,10 @@ trait MakesPlantIdRequest
         $this->setCurl($curl, $data);
         $response = curl_exec($curl);
         curl_close($curl);
-
         return collect(json_decode($response)->results)
-            ->map(function ($result) {
+            ->map(function ($result, $key) {
                 return collect([
+                    $key,
                     number_format($result->score * 100, 1),
                     ucwords($result->species->commonNames[0]),
                     ucwords($result->species->scientificName),
@@ -46,7 +46,8 @@ trait MakesPlantIdRequest
                             'citation' => $image->citation,
                             'date' => $image->date->string
                         ];
-                    })
+                    }),
+                    $result->gbif->id
                 ]);
             })->toArray();
     }

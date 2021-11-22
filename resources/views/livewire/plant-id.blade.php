@@ -29,6 +29,7 @@
                         </div>
                     </div>
                 </x-slot>
+                
                       {{-- Image Slider --}}
                       <div class="grid gap-2 grid-cols-2">
                         @if (array_key_exists(0, $images) && array_key_exists(0, $organs))

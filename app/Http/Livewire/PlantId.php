@@ -14,16 +14,20 @@ class PlantId extends Component
     use MakesPlantIdRequest;
     use HasImageSlider;
 
-    public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
-    public $addImage = false;
+    public $score;
+    public $results;
     public $organs = [];
     public $images = [];
-    public $uploadingImages = true;
-    public $results;
-    public $score;
+    public $imageUrls = [];
     public $colorOfScore;
-    public $listeners = [
-        'organSelected'
+    public $addImage = false;
+    public $uploadingImages = true;
+    public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
+
+    protected $listeners = [
+        'organSelected',
+        'removeResult',
+        'refresh' => '$refresh'
     ];
 
     public function rules()
@@ -47,15 +51,15 @@ class PlantId extends Component
 
     public function updatingImages($images)
     {
-        $key = key(collect($images)
-            ->diff($this->images)
-            ->toArray());
+        $image = collect($images)
+            ->diff($this->images);
+        $key = key($image->toArray());
+        $imageUrl = $image->first()->temporaryUrl();
 
-        Cache::put($key, ['imageUrl' => collect($images)
-            ->diff($this->images)
-            ->first()
-            ->temporaryUrl()]);
-        
+        $this->imageUrls[$key] = $imageUrl;
+
+        Cache::put($key, ['imageUrl' => $imageUrl]);
+
         $this->selectOrgan($key);
     }
 
@@ -73,6 +77,12 @@ class PlantId extends Component
     public function clearProperties()
     {
         $this->reset();
+    }
+
+    public function removeResult($resultId)
+    {
+        unset($this->results[$resultId]);
+        $this->emit('refresh');
     }
 
     public function changeOrgan($id)
@@ -100,13 +110,11 @@ class PlantId extends Component
         try {
             $this->results = $this->getResults();
             Cache::put('results', $this->results);
+            Cache::put('uploaded', [$this->imageUrls, $this->organs]);
+            $this->uploadingImages = false;
         } catch (\Throwable $e) {
             $this->emitSelf('hasErrors');
             throw $e;
-        }
-
-        if (isset($this->results)) {
-            $this->uploadingImages = false;
         }
     }
 
@@ -116,6 +124,3 @@ class PlantId extends Component
             ->layout('layouts.plant-id');
     }
 }
-
-
-

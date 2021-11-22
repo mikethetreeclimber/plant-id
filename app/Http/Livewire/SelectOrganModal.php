@@ -9,7 +9,6 @@ class SelectOrganModal extends Component
     public $imageUrl = '';
     public $currentKey;
     public $selectOrgan = false;
-    public $organs = [];
     public $organIcons = [
         'bark',
         'flower',
@@ -18,8 +17,6 @@ class SelectOrganModal extends Component
         'habit',
         'other'
     ];
-    public $organIconsPath = 'storage/icons/plant-id/organs/';
-
     public $listeners = [ 
         'showModal'
     ];
