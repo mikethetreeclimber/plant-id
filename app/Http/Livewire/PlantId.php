@@ -53,6 +53,11 @@ class PlantId extends Component
     {
         $image = collect($images)
             ->diff($this->images);
+         $b = imagecreate(600, 600);
+
+        //  $optimized = ();
+        $a = imagecreatefromjpeg($image->first()->getRealPath());
+        dd($image, imageresolution($a), $b );
         $key = key($image->toArray());
         $imageUrl = $image->first()->temporaryUrl();
 
