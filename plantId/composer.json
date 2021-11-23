@@ -1,0 +1,31 @@
+{
+    "name": "arbmanx/plant-id",
+    "description": "Identify plants with the plant net api",
+    "type": "plugin",
+    "require": {
+        "illuminate/support": "^8.73",
+        "livewire/livewire": "^2.7"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.23"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Arbmanx\\PlantId\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ArbmanX\\PlantId\\PlantIdServiceProvider"
+            ]
+        }
+    },
+    "authors": [
+        {
+            "name": "Mike the Tree Climber",
+            "email": "mikethetreeclimber@gmail.com"
+        }
+    ]
+}

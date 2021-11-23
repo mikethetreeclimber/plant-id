@@ -57,9 +57,8 @@
 <body class="font-sans antialiased bg-gray-200">
     <main class="mx-auto bg-gray-300 h-full space-y-4">
         <x-container>
-            <div>
-                <div class="bg-gray-400 space-y-4 overflow-hidden shadow rounded-lg w-full">
-                    <div class="px-4 pt-4 sm:px-6">
+                <x-panel>
+                    <x-slot name="header">
                         <div class="border-b border-gray-900 grid grid-cols-3">
                             <div class="flex justify-center items-center">
                                 <div x-data="{open: false}" class="relative">
@@ -84,44 +83,41 @@
                             </div>
 
                         </div>
-                    </div>
-                    <div class="px-4 sm:p-6">
-                        <div class="flex items-center justify-center">
-                            <div class="w-full max-w-md">
-                                <div class="flex">
-
-                                    <div class="flex-auto hover:w-full group">
-                                        <button type="button" wire:click="removeResult('0')"
-                                            class="flex items-center justify-center text-center mx-auto px-4 py-2 group-hover:w-full text-indigo-500">
+                    </x-slot>
+                    <div class="flex items-center justify-center">
+                        <div class="w-full max-w-md">
+                            <div class="flex space-x-4 justify-end">
+                                <div class="hover:w-full group">
+                                    <button type="button" wire:click="removeResult('0')"
+                                        class="flex items-center justify-center text-center mx-auto group-hover:w-full text-indigo-500">
+                                        <span
+                                            class="block px-1 py-1 group-hover:bg-indigo-100 rounded-full group-hover:flex-grow">
+                                            <i class="fas fa-question-circle text-2xl pt-1"></i>
                                             <span
-                                                class="block px-1 py-1 group-hover:bg-indigo-100 rounded-full group-hover:flex-grow">
-                                                <i class="fas fa-question-circle text-2xl pt-1"></i>
-                                                <span
-                                                    class="hidden group-hover:inline-block ml-3 align-bottom pb-1">Compare</span>
-                                            </span>
-                                            </a>
-                                    </div>
-                                    <div class="flex-auto hover:w-full group">
-                                        <a href="#"
-                                            class="flex items-center justify-center text-center mx-auto px-4 py-2 group-hover:w-full text-red-500">
-                                            <span
-                                                class="block px-1 py-1 group-hover:bg-indigo-100 rounded-full group-hover:flex-grow">
-                                                <i class="far fa-trash text-2xl pt-1"></i><span
-                                                    class="hidden group-hover:inline-block ml-3 align-bottom pb-1">Remove</span>
-                                            </span>
+                                                class="hidden group-hover:inline-block ml-3 align-bottom pb-1">Compare</span>
+                                        </span>
                                         </a>
-                                    </div>
-                                    <div class="flex-auto hover:w-full group">
-                                        <button type="button"
-                                            class="flex flex-row items-center justify-center mx-auto px-2 py-1 group-hover:w-full rounded-full text-green-900">
+                                </div>
+                                <div class="hover:w-full group">
+                                    <a href="#"
+                                        class="flex items-center justify-center text-center mx-auto group-hover:w-full text-red-500">
+                                        <span
+                                            class="block px-1 py-1 group-hover:bg-indigo-100 rounded-full group-hover:flex-grow">
+                                            <i class="far fa-trash text-2xl pt-1"></i><span
+                                                class="hidden group-hover:inline-block ml-3 align-bottom pb-1">Remove</span>
+                                        </span>
+                                    </a>
+                                </div>
+                                <div class="hover:w-full group">
+                                    <button type="button"
+                                        class="flex flex-row items-center justify-center mx-auto group-hover:w-full rounded-full text-green-900">
+                                        <span
+                                            class="block px-1 py-1 group-hover:bg-green-600 rounded-full group-hover:flex-grow">
+                                            <i class="fas fa-check-circle text-2xl pt-1"></i>
                                             <span
-                                                class="block px-1 py-1 group-hover:bg-green-600 rounded-full group-hover:flex-grow">
-                                                <i class="fas fa-check-circle text-2xl pt-1"></i>
-                                                <span
-                                                    class="hidden group-hover:inline-block ml-3 align-bottom pb-1">Confirm</span>
-                                            </span>
-                                        </button>
-                                    </div>
+                                                class="hidden group-hover:inline-block ml-3 align-bottom pb-1">Confirm</span>
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -174,12 +170,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="px-4">
-
-                </div>
-            </div>
-            </div>
+                </x-panel>
         </x-container>
     </main>
 
