@@ -51,6 +51,7 @@ class PlantId extends Component
 
     public function updatingImages($images)
     {
+        dd($images);
         $image = collect($images)
             ->diff($this->images);
          $b = imagecreate(600, 600);
