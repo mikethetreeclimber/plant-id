@@ -35,7 +35,7 @@ class PlantId extends Component
         $keys = [];
         $values = [];
         foreach (array_keys($this->images) as $key) {
-            $values[] = 'sometimes|required|mimes:jpeg,png|max:10400';
+            $values[] = 'sometimes|required|mimes:jpeg,png,jpg|max:12288';
             $keys[] = 'images.' . $key;
             $values[] = 'required_with:images.' . $key;
             $keys[] = 'organs.' . $key;
