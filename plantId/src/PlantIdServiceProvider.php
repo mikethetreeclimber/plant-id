@@ -15,7 +15,7 @@ class PlantIdServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/plant-id.php', 'plantId');
+        // $this->mergeConfigFrom(__DIR__.'/../config/plant-id.php', 'plantId');
 
         $this->app->afterResolving(BladeCompiler::class, function () {
             if (class_exists(Livewire::class)) {
