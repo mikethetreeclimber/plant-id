@@ -4,21 +4,13 @@ namespace App\Http\Livewire\Traits;
 
 trait MakesPlantIdRequest
 {
-    public function makeBody($data)
+    public function getResults($data)
     {
-        dd(...$data);
-    }
-
-    public function getResults()
-    {
-
-        $data = $this->validate();
-
 
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://my-api.plantnet.org/v2/identify/all?include-related-images=true&api-key=2b10FiRnqF3kK1anow3Ga9Y7e',
+            CURLOPT_URL => 'https://'.config('plantId.endpoint').'/v2/identify/all?include-related-images=true&api-key='.config('plantId.secret'),
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
@@ -29,27 +21,34 @@ trait MakesPlantIdRequest
         ));
 
         $this->setCurl($curl, $data);
-        $response = curl_exec($curl);
+        $response = json_decode(curl_exec($curl));
+        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
-        return collect(json_decode($response)->results)
-            ->map(function ($result, $key) {
-                return collect([
-                    $key,
-                    number_format($result->score * 100, 1),
-                    ucwords($result->species->commonNames[0]),
-                    ucwords($result->species->scientificName),
-                    ucwords($result->species->scientificNameWithoutAuthor),
-                    collect($result->images)->map(function ($image) {
-                        return  [
-                            'imageUrl' => $image->url->m,
-                            'organ' => $image->organ,
-                            'citation' => $image->citation,
-                            'date' => $image->date->string
-                        ];
-                    }),
-                    $result->gbif->id
-                ]);
-            })->toArray();
+        if ($statusCode === 200) {
+            return collect($response->results)
+                ->map(function ($result, $key) {
+                    return collect([
+                        $key,
+                        number_format($result->score * 100, 1),
+                        ucwords($result->species->commonNames[0]),
+                        ucwords($result->species->scientificName),
+                        ucwords($result->species->scientificNameWithoutAuthor),
+                        collect($result->images)->map(function ($image) {
+                            return  [
+                                'imageUrl' => $image->url->m,
+                                'organ' => $image->organ,
+                                'citation' => $image->citation,
+                                'date' => $image->date->string
+                            ];
+                        }),
+                        $result->gbif->id
+                    ]);
+                })->toArray();
+        } 
+
+        if ($statusCode === 404) {
+            throw new \ErrorException($response->message.', Please Add More Images and Resubmit');
+        }
     }
 
     public function setCurl($curl, $data)

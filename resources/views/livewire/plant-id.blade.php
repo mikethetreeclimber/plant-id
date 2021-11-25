@@ -1,16 +1,20 @@
 <x-container>
+    <x-error on="hasErrors" :errors="$errors" />
     <div>
-        <x-error on="hasErrors" :errors="$errors" />
+        <livewire:select-organ-modal />
     </div>
-    <livewire:select-organ-modal />
+    <div wire:loading>
+        <x-loading-gears />
+    </div>
 
     <div>
-        @if($uploadingImages)
+        @if ($uploadingImages)
             <x-panel>
                 <x-slot name="header">
                     <div class='flex items-center justify-center'>
                         <div class="w-full text-center">
-                            <label class="uppercase text-center text-sm md:text-lg text-gray-900 font-semibold mb-1">Upload
+                            <label
+                                class="uppercase text-center text-sm md:text-lg text-gray-900 font-semibold mb-1">Upload
                                 Photo</label>
                             <label
                                 class='flex flex-col border-4 border-dashed w-full h-32 hover:bg-gray-400 bg-gray-500 border-gray-900 group'>
@@ -29,46 +33,43 @@
                         </div>
                     </div>
                 </x-slot>
-                
-                      {{-- Image Slider --}}
-                      <div class="grid gap-2 grid-cols-2">
-                        @if (array_key_exists(0, $images) && array_key_exists(0, $organs))
-                            <div class="mx-auto col-span-2 ">
-                                <x-image-card :img="$images[$currentImageIndex]->temporaryUrl()" :icon="$organs[$currentImageIndex]" />
-                            </div>
-                        @endif
-                        @if (count($images) > 1)
-                            <div class="col-span-1 w-auto flex justify-center items-center">
-                                <x-slider-button direction="back" />
-                            </div>
-                            <div class="col-span-1 w-auto flex justify-center items-center">
-                                <x-slider-button direction="next" />
-                            </div>
-                        @endif
-                    </div>
-                
+
+                {{-- Image Slider --}}
+                <div class="grid gap-2 grid-cols-2">
+                    @if (array_key_exists(0, $images) && array_key_exists(0, $organs))
+
+                        <div class="mx-auto col-span-2 ">
+                            <x-image-card :img="$images[$currentImageIndex]->temporaryUrl()"
+                                :icon="$organs[$currentImageIndex]" />
+                        </div>
+                    @endif
+                    @if (count($images) > 1)
+                        <div class="col-span-1 w-auto flex justify-center items-center">
+                            <x-slider-button direction="back" />
+                        </div>
+                        <div class="col-span-1 w-auto flex justify-center items-center">
+                            <x-slider-button direction="next" />
+                        </div>
+                    @endif
+                </div>
+
                 <x-slot name="footer">
                     <div class="flex justify-end space-x-2">
-                        <span>
-                            <button wire:click="submit"
-                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                                type="submit">
-                                Submit
-                            </button>
-                            <div wire:loading wire:target="submit">
-                                <x-loading-gears />
-                            </div>
-                        </span>
+                        <button wire:click="submit"
+                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                            type="button">
+                            Submit
+                        </button>
                         <button wire:click="clearProperties"
                             class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                             type="button">
                             Clear Form
                         </button>
                         <button wire:click="getCache"
-                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                        type="button">
-                        Get Cache
-                    </button>
+                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                            type="button">
+                            Get Cache
+                        </button>
                     </div>
                 </x-slot>
             </x-panel>
@@ -84,4 +85,5 @@
             </div>
         @endisset
     </div>
+
 </x-container>

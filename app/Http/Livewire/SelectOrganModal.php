@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Cache;
 class SelectOrganModal extends Component
 {
     public $imageUrl = '';
-    public $currentKey;
     public $selectOrgan = false;
     public $organIcons = [
         'bark',
@@ -21,21 +20,16 @@ class SelectOrganModal extends Component
         'showModal'
     ];
 
-    public function showModal($key)
+    public function showModal($imageUrl)
     {
-        $this->currentKey = $key;
-        $this->imageUrl = Cache::get($this->currentKey)['imageUrl'];
+        $this->imageUrl = $imageUrl;
 
         $this->selectOrgan = true;
     }
 
     public function addSelectedOrgan($organ)
     {
-        Cache::put($this->currentKey, [
-            'imageUrl' => $this->imageUrl, 
-            'organ' => $organ
-        ]);
-        $this->emitTo(PlantId::class, 'organSelected', $this->currentKey);
+        $this->emit('organSelected', $organ);
         $this->reset();
     }
 

@@ -6,7 +6,9 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Livewire\Traits\HasImageSlider;
+use Spatie\ImageOptimizer\OptimizerChainFactory;
 use App\Http\Livewire\Traits\MakesPlantIdRequest;
+use Illuminate\Validation\ValidationException;
 
 class PlantId extends Component
 {
@@ -14,15 +16,10 @@ class PlantId extends Component
     use MakesPlantIdRequest;
     use HasImageSlider;
 
-    public $score;
     public $results;
     public $organs = [];
     public $images = [];
-    public $imageUrls = [];
-    public $colorOfScore;
-    public $addImage = false;
     public $uploadingImages = true;
-    public $api_key = '2b10FiRnqF3kK1anow3Ga9Y7e';
 
     protected $listeners = [
         'organSelected',
@@ -35,7 +32,7 @@ class PlantId extends Component
         $keys = [];
         $values = [];
         foreach (array_keys($this->images) as $key) {
-            $values[] = 'sometimes|required|mimes:jpeg,png,jpg|max:12288';
+            $values[] = 'sometimes|required|mimes:jpeg,png,jpg|max:6250665';
             $keys[] = 'images.' . $key;
             $values[] = 'required_with:images.' . $key;
             $keys[] = 'organs.' . $key;
@@ -51,33 +48,24 @@ class PlantId extends Component
 
     public function updatingImages($images)
     {
-        dd($images);
         $image = collect($images)
-            ->diff($this->images);
-         $b = imagecreate(600, 600);
+            ->diff($this->images)
+            ->first();
+        $optimizerChain = OptimizerChainFactory::create();
+        $optimizerChain->optimize($image->getRealPath());
+        $this->images[] = $image;
 
-        //  $optimized = ();
-        $a = imagecreatefromjpeg($image->first()->getRealPath());
-        dd($image, imageresolution($a), $b );
-        $key = key($image->toArray());
-        $imageUrl = $image->first()->temporaryUrl();
-
-        $this->imageUrls[$key] = $imageUrl;
-
-        Cache::put($key, ['imageUrl' => $imageUrl]);
-
-        $this->selectOrgan($key);
+        $this->selectOrgan($image->temporaryUrl());
     }
 
-    public function selectOrgan($key)
+    public function selectOrgan($imageUrl)
     {
-        $this->emitTo(SelectOrganModal::class, 'showModal', $key);
+        $this->emitTo(SelectOrganModal::class, 'showModal', $imageUrl);
     }
 
-    public function organSelected($key)
+    public function organSelected($organ)
     {
-        $this->organs[] = Cache::get($key)['organ'];
-        $this->emitTo(ImageSlider::class, 'imageAdded', $key);
+        $this->organs[] = $organ;
     }
 
     public function clearProperties()
@@ -103,24 +91,18 @@ class PlantId extends Component
         unset($this->organs[$id]);
     }
 
-    public function getCache()
-    {
-        $this->results = Cache::get('results');
-        if (isset($this->results)) {
-            $this->uploadingImages = false;
-        }
-    }
-
     public function submit()
     {
         try {
-            $this->results = $this->getResults();
-            Cache::put('results', $this->results);
-            Cache::put('uploaded', [$this->imageUrls, $this->organs]);
+            $data = $this->validate();
+            $this->results = $this->getResults($data);
             $this->uploadingImages = false;
-        } catch (\Throwable $e) {
+        } catch (ValidationException $e) {
             $this->emitSelf('hasErrors');
             throw $e;
+        } catch (\ErrorException $e) {
+            $this->addError('error', $e->getMessage());
+            $this->emitSelf('hasErrors');
         }
     }
 

@@ -49,7 +49,7 @@ class PlantIdResults extends Component
 
     public function removeResult($resultId)
     {
-        $this->emitTo(PlantId::class, 'removeResult', $resultId);
+        $this->emit('removeResult', $resultId);
     }
 
     public function render()
