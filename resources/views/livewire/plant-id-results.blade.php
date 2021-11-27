@@ -1,86 +1,137 @@
-<x-panel>
-    <x-slot name="header">
-        <div class="flex justify-evenly">
-            <div>
-                <h2 class="mt-6 text-gray-900 text-sm font-extrabold">
-                    Score
-                </h2>
-                <h3 class="mt-2 mb-6 text-gray-900 text-sm font-medium">
-                    <span
-                        class="px-2 py-1 text-white text-xs font-medium bg-{{ $this->colorOfScore }}-600 rounded-full">
-                        {{ $score }}%
-                    </span>
-                </h3>
-            </div>
-            <h3 class="mt-6 text-gray-900 text-lg font-medium">
-                {{ $commonName }}</h3>
+<div class='flex max-w-sm w-full mx-auto'>
+    <div class="overflow-hidden rounded-xl shadow-xl drop-shadow-xl relative">
+        {{-- image overlay --}}
+        <div
+            class="absolute bottom-0 left-0 right-0 top-24 z-10 bg-gradient-to-t from-black via-gray-900 to-transparent">
         </div>
-    </x-slot>
-    <div class="w-full">
-        <button type="button" wire:click="compareUploadedToResult"
-            class="relative w-full flex justify-center items-center flex-col text-sm text-indigo-700 font-medium border border-transparent rounded-bl-lg hover:text-indigo-500">
-            <!-- Heroicon name: solid/mail -->
-            <svg class="w-5 h-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                fill="currentColor" aria-hidden="true">
-                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-            </svg>
-            <span>Compare</span>
-        </button>
-    </div>
-    <div class="grid gap-2 grid-cols-2">
-        <div class="mx-auto col-span-2 ">
 
-            <x-image-card img="{{ $images[$currentImageIndex]['imageUrl'] }}"
-                icon="{{ $images[$currentImageIndex]['organ'] }}" />
-        </div>
-        <dl class="mt-1 flex-grow flex flex-col justify-between col-span-2">
-            <dt class="sr-only">Citation</dt>
-            <dd class="text-gray-800 text-sm">{{ $images[$currentImageIndex]['citation'] }}</dd>
-            <dt class="sr-only">Date</dt>
-            <dd class="text-gray-800 text-sm">{{ $images[$currentImageIndex]['date'] }}</dd>
-        </dl>
-        @if (count($images) > 1)
-            <div class="col-span-1 w-auto flex justify-center items-center">
-                <x-slider-button direction="back" />
+        {{-- species details --}}
+        <div class="relative cursor-pointer group z-10 px-2 pt-10">
+            <div class="align-self-end w-full">
+                {{-- image slider btns --}}
+                <div class="h-64 flex justify-between items-center w-full mb-8">
+                    {{-- Back btn --}}
+                    <div class="flex flex-col">
+                        <button wire:click="back"
+                            class="transition duration-500 ease-in-out -translate-y-1/2 w-11 h-11 flex justify-center items-center rounded-full z-10 bg-transparent hover:bg-gray-900">
+                            <svg class=" w-8 h-8 font-bold transition duration-500 ease-in-out transform motion-reduce:transform-none text-white hover:text-gray-200 hover:-translate-x-0.5"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M15 19l-7-7 7-7">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    {{-- Next btn --}}
+                    <div class="flex flex-col">
+                        <button wire:click="next"
+                            class="transition duration-500 ease-in-out translate-y-1/2 w-11 h-11 flex justify-center items-center bg-transparent hover:bg-gray-900 rounded-full z-10 ">
+                            <svg class=" w-8 h-8 font-bold transition duration-500 ease-in-out transform motion-reduce:transform-none text-white hover:text-gray-200 hover:translate-x-0.5"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- citation /score /species name --}}
+                <div class="flex flex-col mb-3 px-4 space-y-2">
+                    {{-- citation --}}
+                    <div class="text-gray-400 text-opacity-75 truncate flex flex-col justify-center items-center">
+                        <span class="sr-only">Citation</span>
+                        <p class="text-xs">{{ $images[$currentImageIndex]['citation'] }}</p>
+                        <span class="sr-only">Date</span>
+                        <p class=" text-xs">{{ $images[$currentImageIndex]['date'] }}</p>
+                    </div>
+
+                    {{-- Score --}}
+                    <div class="flex justify-start items-center">
+                        <div x-data="{open: false}" class="relative">
+                            <button type="button" @mouseover="open = true" @mouseleave="open = false"
+                                class="text-right px-3 py-2 text-white text-sm font-medium bg-{{ $this->colorOfScore }}-600 rounded-full">
+                                {{ $score }}%
+                            </button>
+                            <div x-show.transition.out.opacity.duration.1500ms="open"
+                                x-transition:leave.opacity.duration.1500ms
+                                class="p-3 transition  ease-in-out rounded shadow-2xl flex flex-col left-0 max-w-xl bg-white text-sm text-gray-800 mt-3 absolute z-20 w-64">
+                                <p class="font-bold">
+                                    Probability this is the correct species
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Species Name --}}
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">{{ $commonName }}</h3>
+                        <p class="max-w-4xl italic text-lg text-gray-300">{{ $scientificNameWithout }}</p>
+                    </div>
+                </div>
+
+                {{-- description / wiki link --}}
+                <div class="flex flex-col px-4">
+                    <div class="text-base text-gray-400 mb-2">Description:</div>
+                    <p class="text-xs text-gray-100 mb-6">
+                        Wiki Link
+                        Paul Atreides, a brilliant and gifted young man born into a great destiny
+                        beyond his understanding, must travel to the most dangerous
+                    </p>
+                </div>
             </div>
-            <div class="col-span-1 w-auto flex justify-center items-center">
-                <x-slider-button direction="next" />
-            </div>
-        @endif
-    </div>
-    <x-slot name="footer">
-        <div class="grid grid-cols-2">
-            <div class="w-full col-span-1">
-                <button type="button" wire:click="removeResult('{{ $resultId }}')"
-                    class="relative w-full flex justify-center items-center flex-col  py-4 text-sm text-yellow-700 font-medium border border-transparent rounded-bl-lg hover:text-yellow-500">
-                    <!-- Heroicon name: solid/mail -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span class="ml-">Not a match</span>
+
+            {{-- Top btn overlays image --}}
+            <div class="absolute inset-x-0 top-0 pt-3 pl-3 w-full mx-auto flex justify-start items-center">
+                <button type="button" wire:click="compare"
+                    class="relative flex items-center w-min  flex-shrink-0 p-2 text-center text-white ">
+                    @switch($images[$currentImageIndex]['organ'])
+                        @case('bark')
+                            <x-bark-icon />
+                        @break
+                        @case('leaf')
+                            <x-leaf-icon />
+                        @break
+                        @case('flower')
+                            <x-flower-icon />
+                        @break
+                        @case('fruit')
+                            <x-fruit-icon />
+                        @break
+                        @case('habitat')
+                            <x-habitat-icon />
+                        @break
+                        @case('other')
+                            <x-other-icon />
+                        @break
+                        @default
+                    @endswitch
+                    <div
+                        class="absolute flex space-x-2 transition opacity-0 px-4 py-2 rounded-xl duration-500 ease-in-out transform group-hover:opacity-100 group-hover:translate-x-20 text-xl font-bold text-white bg-gray-900 bg-opacity-90 group-hover:pr-8">
+                        <i class="fas fa-question-circle text-2xl"></i>
+                        <p>Compare</p>
+                    </div>
                 </button>
             </div>
-
-            <div class="w-full col-span-1">
-                <button type="button"
-                    class="relative w-full flex justify-center items-center flex-col py-4 text-sm text-green-900 font-medium border border-green-700 rounded-lg hover:text-green-500">
-                    <!-- Heroicon name: solid/phone -->
-                    <svg viewBox="0 0 16 16" class="w-5 h-5 text-green-900" focusable="false" role="img"
-                        aria-label="check circle" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-                        <g>
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z">
-                            </path>
-                            <path
-                                d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z">
-                            </path>
-                        </g>
-                    </svg>
-                    <span class="ml-3">It's the right species</span>
-                </button>
-            </div>
         </div>
-    </x-slot>
-</x-panel>
+
+        {{-- image --}}
+        <img class="absolute inset-0 transform w-full" src="{{ $images[$currentImageIndex]['imageUrl'] }}"
+            style="filter: grayscale(0);" />
+
+        {{-- footer --}}
+        <div class="flex justify-evenly relative pb-10 space-x-1 z-10">
+            <button type="button" wire:click="confirm"
+                class="flex items-center py-2 px-4 rounded-full text-white bg-green-500 hover:bg-green-700">
+                <i class="fas fa-check"></i>
+                <div class="text-sm text-white ml-2">Confirm</div>
+            </button>
+            <button type="button" wire:click="removeResult('{{ $resultId }}')"
+                class="flex items-center py-2 px-4 rounded-full text-white bg-red-500 hover:bg-red-700">
+                <i class="far fa-trash text-2xl"></i>
+                <div class="text-sm text-white ml-2">Remove</div>
+            </button>
+        </div>
+    </div>
+</div>

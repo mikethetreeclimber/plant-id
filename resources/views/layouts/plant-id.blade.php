@@ -13,6 +13,21 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    <style>
+        @import url(https://pro.fontawesome.com/releases/v5.10.0/css/all.css);
+
+        #popover:before {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 5%;
+            margin-left: -10px;
+            border-width: 7px;
+            border-style: solid;
+            border-color: transparent transparent lightgray transparent;
+        }
+
+    </style>
 
     @livewireStyles
 
