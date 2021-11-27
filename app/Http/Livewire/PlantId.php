@@ -9,6 +9,9 @@ use App\Http\Livewire\Traits\HasImageSlider;
 use Spatie\ImageOptimizer\OptimizerChainFactory;
 use App\Http\Livewire\Traits\MakesPlantIdRequest;
 use Illuminate\Validation\ValidationException;
+use Livewire\TemporaryUploadedFile;
+use Spatie\ImageOptimizer\Image;
+use Spatie\ImageOptimizer\OptimizerChain;
 
 class PlantId extends Component
 {
@@ -51,8 +54,9 @@ class PlantId extends Component
         $image = collect($images)
             ->diff($this->images)
             ->first();
-        $optimizerChain = OptimizerChainFactory::create();
-        $optimizerChain->optimize($image->getRealPath());
+
+        $optimizing = OptimizerChainFactory::create();
+        $optimizing->optimize($image->path());
         $this->images[] = $image;
 
         $this->selectOrgan($image->temporaryUrl());
