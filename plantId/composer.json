@@ -3,16 +3,16 @@
     "description": "Identify plants with the plant net api",
     "type": "plugin",
     "require": {
-        "illuminate/support": "^8.73",
-        "livewire/livewire": "^2.7"
+        "illuminate/support": "^12.0",
+        "livewire/livewire": "^4.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^6.23"
+        "orchestra/testbench": "^10.0"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Arbmanx\\PlantId\\": "src/"
+            "ArbmanX\\PlantId\\": "src/"
         }
     },
     "extra": {

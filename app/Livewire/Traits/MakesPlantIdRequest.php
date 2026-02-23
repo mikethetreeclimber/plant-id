@@ -9,45 +9,69 @@ trait MakesPlantIdRequest
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => 'https://' . config('plantId.endpoint') . '/v2/identify/all?include-related-images=true&api-key=' . config('plantId.secret'),
+            CURLOPT_URL => 'https://' . config('plantId.endpoint') . '/v2/identify/all?include-related-images=true',
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 10,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         ]);
 
         $this->setCurl($curl, $data);
-        $response = json_decode(curl_exec($curl));
+        $rawResponse = curl_exec($curl);
+
+        if ($rawResponse === false) {
+            $error = curl_error($curl);
+            curl_close($curl);
+            throw new \ErrorException('Failed to connect to PlantNet API: ' . $error);
+        }
+
         $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
 
+        $response = json_decode($rawResponse);
+
+        if ($response === null) {
+            throw new \ErrorException('Invalid response from PlantNet API');
+        }
+
         if ($statusCode === 200) {
+            if (!isset($response->results) || !is_array($response->results)) {
+                throw new \ErrorException('Unexpected response format from PlantNet API');
+            }
+
             return collect($response->results)
                 ->map(function ($result, $key) {
+                    $commonName = $result->species->commonNames[0] ?? 'Unknown';
+                    $scientificName = $result->species->scientificName ?? 'Unknown';
+                    $scientificNameWithout = $result->species->scientificNameWithoutAuthor ?? $scientificName;
+                    $gbifId = $result->gbif->id ?? null;
+
                     return collect([
                         $key,
                         number_format($result->score * 100, 1),
-                        ucwords($result->species->commonNames[0]),
-                        ucwords($result->species->scientificName),
-                        ucwords($result->species->scientificNameWithoutAuthor),
+                        ucwords($commonName),
+                        ucwords($scientificName),
+                        ucwords($scientificNameWithout),
                         collect($result->images)->map(function ($image) {
                             return [
-                                'imageUrl' => $image->url->m,
-                                'organ' => $image->organ,
-                                'citation' => $image->citation,
-                                'date' => $image->date->string,
+                                'imageUrl' => $image->url->m ?? '',
+                                'organ' => $image->organ ?? '',
+                                'citation' => $image->citation ?? '',
+                                'date' => $image->date->string ?? '',
                             ];
                         }),
-                        $result->gbif->id,
+                        $gbifId,
                     ]);
                 })->toArray();
         }
 
         if ($statusCode === 404) {
-            throw new \ErrorException($response->message . ', Please Add More Images and Resubmit');
+            $message = $response->message ?? 'Species not found';
+            throw new \ErrorException($message . ', Please Add More Images and Resubmit');
         }
 
         throw new \ErrorException('Unexpected API response (HTTP ' . $statusCode . ')');
@@ -109,6 +133,7 @@ trait MakesPlantIdRequest
             'Content-Length: ' . $contentLength,
             'Expect: 100-continue',
             'Content-Type: ' . $contentType,
+            'Api-Key: ' . config('plantId.secret'),
         ]);
 
         curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
