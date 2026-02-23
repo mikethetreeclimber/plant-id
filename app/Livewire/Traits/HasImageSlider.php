@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Livewire\Traits;
-
+namespace App\Livewire\Traits;
 
 trait HasImageSlider
 {
-    public $currentImageIndex = 0;
+    public int $currentImageIndex = 0;
 
-    public function back()
+    public function back(): void
     {
         if ($this->currentImageIndex === 0) {
             $this->currentImageIndex = count($this->images) - 1;
@@ -15,10 +14,9 @@ trait HasImageSlider
         }
 
         $this->currentImageIndex -= 1;
-        return;
     }
 
-    public function next()
+    public function next(): void
     {
         if ($this->currentImageIndex === count($this->images) - 1) {
             $this->currentImageIndex = 0;
@@ -26,7 +24,5 @@ trait HasImageSlider
         }
 
         $this->currentImageIndex += 1;
-        return;
-    }    
-
+    }
 }

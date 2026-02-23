@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Http\Livewire;
+namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Cache;
-use App\Http\Livewire\Traits\HasImageSlider;
-use Spatie\ImageOptimizer\OptimizerChainFactory;
-use App\Http\Livewire\Traits\MakesPlantIdRequest;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
+use App\Livewire\Traits\HasImageSlider;
+use App\Livewire\Traits\MakesPlantIdRequest;
 use Illuminate\Validation\ValidationException;
-use Livewire\TemporaryUploadedFile;
-use Spatie\ImageOptimizer\Image;
-use Spatie\ImageOptimizer\OptimizerChain;
+use Spatie\ImageOptimizer\OptimizerChainFactory;
 
+#[Layout('components.layouts.app')]
 class PlantId extends Component
 {
     use WithFileUploads;
@@ -20,17 +19,11 @@ class PlantId extends Component
     use HasImageSlider;
 
     public $results;
-    public $organs = [];
-    public $images = [];
-    public $uploadingImages = true;
+    public array $organs = [];
+    public array $images = [];
+    public bool $uploadingImages = true;
 
-    protected $listeners = [
-        'organSelected',
-        'removeResult',
-        'refresh' => '$refresh'
-    ];
-
-    public function rules()
+    public function rules(): array
     {
         $keys = [];
         $values = [];
@@ -49,7 +42,7 @@ class PlantId extends Component
         return array_combine($keys, $values);
     }
 
-    public function updatingImages($images)
+    public function updatingImages($images): void
     {
         $image = collect($images)
             ->diff($this->images)
@@ -62,57 +55,57 @@ class PlantId extends Component
         $this->selectOrgan($image->temporaryUrl());
     }
 
-    public function selectOrgan($imageUrl)
+    public function selectOrgan(string $imageUrl): void
     {
-        $this->emitTo(SelectOrganModal::class, 'showModal', $imageUrl);
+        $this->dispatch('showModal', imageUrl: $imageUrl)->to(SelectOrganModal::class);
     }
 
-    public function organSelected($organ)
+    #[On('organSelected')]
+    public function organSelected(string $organ): void
     {
         $this->organs[] = $organ;
     }
 
-    public function clearProperties()
+    public function clearProperties(): void
     {
         $this->reset();
     }
 
-    public function removeResult($resultId)
+    #[On('removeResult')]
+    public function removeResult(int $resultId): void
     {
         unset($this->results[$resultId]);
-        $this->emit('refresh');
     }
 
-    public function changeOrgan($id)
+    public function changeOrgan(int $id): void
     {
         unset($this->organs[$id]);
         $this->selectOrgan($this->images[$id]);
     }
 
-    public function changeImage($id)
+    public function changeImage(int $id): void
     {
         unset($this->images[$id]);
         unset($this->organs[$id]);
     }
 
-    public function submit()
+    public function submit(): void
     {
         try {
             $data = $this->validate();
             $this->results = $this->getResults($data);
             $this->uploadingImages = false;
         } catch (ValidationException $e) {
-            $this->emitSelf('hasErrors');
+            $this->dispatch('hasErrors');
             throw $e;
         } catch (\ErrorException $e) {
             $this->addError('error', $e->getMessage());
-            $this->emitSelf('hasErrors');
+            $this->dispatch('hasErrors');
         }
     }
 
     public function render()
     {
-        return view('livewire.plant-id')
-            ->layout('layouts.plant-id');
+        return view('livewire.plant-id');
     }
 }

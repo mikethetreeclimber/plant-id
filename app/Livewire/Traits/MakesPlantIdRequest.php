@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Http\Livewire\Traits;
+namespace App\Livewire\Traits;
 
 trait MakesPlantIdRequest
 {
-    public function getResults($data)
+    public function getResults(array $data): array
     {
-
         $curl = curl_init();
 
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://'.config('plantId.endpoint').'/v2/identify/all?include-related-images=true&api-key='.config('plantId.secret'),
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://' . config('plantId.endpoint') . '/v2/identify/all?include-related-images=true&api-key=' . config('plantId.secret'),
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
@@ -18,12 +17,13 @@ trait MakesPlantIdRequest
             CURLOPT_TIMEOUT => 0,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        ));
+        ]);
 
         $this->setCurl($curl, $data);
         $response = json_decode(curl_exec($curl));
         $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
+
         if ($statusCode === 200) {
             return collect($response->results)
                 ->map(function ($result, $key) {
@@ -34,29 +34,31 @@ trait MakesPlantIdRequest
                         ucwords($result->species->scientificName),
                         ucwords($result->species->scientificNameWithoutAuthor),
                         collect($result->images)->map(function ($image) {
-                            return  [
+                            return [
                                 'imageUrl' => $image->url->m,
                                 'organ' => $image->organ,
                                 'citation' => $image->citation,
-                                'date' => $image->date->string
+                                'date' => $image->date->string,
                             ];
                         }),
-                        $result->gbif->id
+                        $result->gbif->id,
                     ]);
                 })->toArray();
-        } 
+        }
 
         if ($statusCode === 404) {
-            throw new \ErrorException($response->message.', Please Add More Images and Resubmit');
+            throw new \ErrorException($response->message . ', Please Add More Images and Resubmit');
         }
+
+        throw new \ErrorException('Unexpected API response (HTTP ' . $statusCode . ')');
     }
 
-    public function setCurl($curl, $data)
+    public function setCurl($curl, array $data): void
     {
         $algos = hash_algos();
         $hashAlgo = null;
 
-        foreach (array('sha1', 'md5') as $preferred) {
+        foreach (['sha1', 'md5'] as $preferred) {
             if (in_array($preferred, $algos)) {
                 $hashAlgo = $preferred;
                 break;
@@ -64,7 +66,7 @@ trait MakesPlantIdRequest
         }
 
         if ($hashAlgo === null) {
-            list($hashAlgo) = $algos;
+            [$hashAlgo] = $algos;
         }
 
         $boundary = '----------------------------' . substr(hash(
@@ -72,7 +74,7 @@ trait MakesPlantIdRequest
             'cURL-php-multiple-value-same-key-support' . microtime()
         ), 0, 12);
 
-        $body = array();
+        $body = [];
         $crlf = "\r\n";
 
         foreach ($data as $keys => $values) {
@@ -101,15 +103,13 @@ trait MakesPlantIdRequest
 
         $contentType = 'multipart/form-data; boundary=' . $boundary;
         $content = join($crlf, $body);
-
-
         $contentLength = strlen($content);
 
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [
             'Content-Length: ' . $contentLength,
             'Expect: 100-continue',
-            'Content-Type: ' . $contentType
-        ));
+            'Content-Type: ' . $contentType,
+        ]);
 
         curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
     }
