@@ -1,35 +1,33 @@
 <?php
-namespace App\Http\Livewire;
+
+namespace App\Livewire;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\On;
 
 class SelectOrganModal extends Component
 {
-    public $imageUrl = '';
-    public $selectOrgan = false;
-    public $organIcons = [
+    public string $imageUrl = '';
+    public bool $selectOrgan = false;
+    public array $organIcons = [
         'bark',
         'flower',
         'fruit',
         'leaf',
         'habit',
-        'other'
-    ];
-    public $listeners = [ 
-        'showModal'
+        'other',
     ];
 
-    public function showModal($imageUrl)
+    #[On('showModal')]
+    public function showModal(string $imageUrl): void
     {
         $this->imageUrl = $imageUrl;
-
         $this->selectOrgan = true;
     }
 
-    public function addSelectedOrgan($organ)
+    public function addSelectedOrgan(string $organ): void
     {
-        $this->emit('organSelected', $organ);
+        $this->dispatch('organSelected', organ: $organ);
         $this->reset();
     }
 
